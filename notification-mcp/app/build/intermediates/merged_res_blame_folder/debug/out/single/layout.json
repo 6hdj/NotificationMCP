@@ -1,0 +1,14 @@
+[
+    {
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\8.2\\com.miclaw.notification.app-mergeDebugResources-40:\\layout\\activity_diagnostic.xml",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\8.2\\com.miclaw.notification.app-main-43:\\layout\\activity_diagnostic.xml"
+    },
+    {
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\8.2\\com.miclaw.notification.app-mergeDebugResources-40:\\layout\\activity_main.xml",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\8.2\\com.miclaw.notification.app-main-43:\\layout\\activity_main.xml"
+    },
+    {
+        "merged": "com.miclaw.notification.app-mergeDebugResources-40:/layout/activity_diagnostic.xml",
+        "source": "com.miclaw.notification.app-main-43:/layout/activity_diagnostic.xml"
+    }
+]

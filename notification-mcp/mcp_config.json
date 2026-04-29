@@ -1,0 +1,561 @@
+{
+  "$schema": "https://miclaw.xiaomi.com/mcp/tool-schema/v2",
+  "name": "notification-mcp",
+  "version": "1.0.0",
+  "displayName": "Android 通知读取",
+  "description": "工业级高可用安卓手机通知栏实时读取工具，支持毫秒级捕获、全字段解析、零漏读保障、异常自动恢复",
+  "author": "MiClaw Community",
+  "license": "MIT",
+  "transport": {
+    "type": "websocket",
+    "host": "127.0.0.1",
+    "port": 8789,
+    "path": "/mcp",
+    "heartbeatIntervalMs": 30000,
+    "reconnectMaxRetries": 5,
+    "reconnectBackoffMs": [2000, 4000, 8000, 16000, 32000]
+  },
+  "tools": [
+    {
+      "name": "get_notifications",
+      "displayName": "获取通知列表",
+      "description": "获取最近的通知列表，支持按APP包名、关键词、时间范围过滤",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "packageName": {
+            "type": "string",
+            "description": "按APP包名过滤，如 com.tencent.mm（微信）"
+          },
+          "keyword": {
+            "type": "string",
+            "description": "按通知标题或正文关键词过滤"
+          },
+          "sinceMinutes": {
+            "type": "integer",
+            "description": "获取最近N分钟内的通知，默认60",
+            "minimum": 1,
+            "maximum": 4320,
+            "default": 60
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["all", "low", "default", "high", "max"],
+            "description": "按通知优先级过滤，默认 all",
+            "default": "all"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "最大返回条数，默认50",
+            "minimum": 1,
+            "maximum": 500,
+            "default": 50
+          },
+          "includeRead": {
+            "type": "boolean",
+            "description": "是否包含已读通知，默认 true",
+            "default": true
+          }
+        }
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "notifications": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "integer", "description": "通知唯一ID" },
+                "fingerprint": { "type": "string", "description": "去重指纹（ID+包名+时间戳）" },
+                "packageName": { "type": "string", "description": "APP包名" },
+                "appName": { "type": "string", "description": "APP名称" },
+                "appVersion": { "type": "string", "description": "APP版本号" },
+                "title": { "type": "string", "description": "通知标题" },
+                "content": { "type": "string", "description": "通知正文" },
+                "subText": { "type": "string", "description": "子文本" },
+                "bigText": { "type": "string", "description": "大文本（展开后内容）" },
+                "channelId": { "type": "string", "description": "通知渠道ID" },
+                "priority": { "type": "string", "description": "通知优先级" },
+                "category": { "type": "string", "description": "通知分类" },
+                "isGroupSummary": { "type": "boolean", "description": "是否为折叠组摘要" },
+                "isClearable": { "type": "boolean", "description": "是否可清除" },
+                "isOngoing": { "type": "boolean", "description": "是否常驻通知" },
+                "isRead": { "type": "boolean", "description": "是否已读" },
+                "postTime": { "type": "string", "format": "date-time", "description": "发送时间" },
+                "receiveTime": { "type": "string", "format": "date-time", "description": "接收时间" },
+                "actions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "title": { "type": "string" },
+                      "actionKey": { "type": "string" }
+                    }
+                  },
+                  "description": "快捷按钮动作列表"
+                },
+                "extras": {
+                  "type": "object",
+                  "description": "额外字段（图片URL等）"
+                }
+              }
+            }
+          },
+          "total": { "type": "integer", "description": "匹配总数" },
+          "hasMore": { "type": "boolean", "description": "是否有更多" }
+        }
+      }
+    },
+    {
+      "name": "get_notification_detail",
+      "displayName": "获取通知详情",
+      "description": "根据通知指纹获取单条通知的完整详情",
+      "inputSchema": {
+        "type": "object",
+        "required": ["fingerprint"],
+        "properties": {
+          "fingerprint": {
+            "type": "string",
+            "description": "通知去重指纹"
+          }
+        }
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "notification": {
+            "type": "object",
+            "description": "通知完整详情（同 get_notifications 中的 items 结构）"
+          }
+        }
+      }
+    },
+    {
+      "name": "get_latest_by_app",
+      "displayName": "获取APP最新通知",
+      "description": "获取指定APP的最新一条通知，常用于快递、外卖等场景的实时监控",
+      "inputSchema": {
+        "type": "object",
+        "required": ["packageName"],
+        "properties": {
+          "packageName": {
+            "type": "string",
+            "description": "APP包名，如 com.sf.activity（顺丰速运）"
+          }
+        }
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "notification": {
+            "type": "object",
+            "description": "最新通知详情，无通知时为 null"
+          }
+        }
+      }
+    },
+    {
+      "name": "get_service_status",
+      "displayName": "查询服务状态",
+      "description": "实时查询通知读取服务的运行状态、统计信息和健康指标",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "isRunning": { "type": "boolean", "description": "服务是否运行中" },
+          "uptimeMs": { "type": "integer", "description": "在线时长（毫秒）" },
+          "uptimeFormatted": { "type": "string", "description": "格式化在线时长" },
+          "stats": {
+            "type": "object",
+            "properties": {
+              "totalReceived": { "type": "integer", "description": "累计接收通知数" },
+              "totalFiltered": { "type": "integer", "description": "累计过滤通知数" },
+              "totalForwarded": { "type": "integer", "description": "累计转发通知数" },
+              "totalDuplicates": { "type": "integer", "description": "累计去重数" },
+              "totalErrors": { "type": "integer", "description": "累计异常次数" },
+              "totalRestarts": { "type": "integer", "description": "累计重启次数" },
+              "lastNotificationTime": { "type": "string", "format": "date-time", "description": "最后收到通知时间" },
+              "lastHeartbeatTime": { "type": "string", "format": "date-time", "description": "最后心跳时间" }
+            }
+          },
+          "health": {
+            "type": "object",
+            "properties": {
+              "connectionStatus": { "type": "string", "enum": ["connected", "disconnected", "reconnecting"], "description": "连接状态" },
+              "permissionStatus": {
+                "type": "object",
+                "properties": {
+                  "notificationListener": { "type": "boolean", "description": "通知使用权" },
+                  "backgroundRun": { "type": "boolean", "description": "后台运行权限" },
+                  "batteryOptimization": { "type": "boolean", "description": "电池优化白名单" }
+                }
+              },
+              "circuitBreaker": {
+                "type": "object",
+                "properties": {
+                  "state": { "type": "string", "enum": ["closed", "open", "half-open"], "description": "熔断状态" },
+                  "failureCount": { "type": "integer", "description": "连续失败次数" },
+                  "lastFailureTime": { "type": "string", "format": "date-time", "description": "最后失败时间" }
+                }
+              }
+            }
+          },
+          "cacheInfo": {
+            "type": "object",
+            "properties": {
+              "cachedCount": { "type": "integer", "description": "缓存队列中的通知数" },
+              "cacheSizeBytes": { "type": "integer", "description": "缓存占用空间" },
+              "cacheHoursCovered": { "type": "number", "description": "缓存覆盖的小时数" }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "get_filtered_apps",
+      "displayName": "获取过滤规则",
+      "description": "获取当前生效的通知过滤规则列表",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "mode": { "type": "string", "enum": ["whitelist", "blacklist"], "description": "过滤模式" },
+          "rules": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string" },
+                "packageName": { "type": "string", "description": "APP包名（可选）" },
+                "appName": { "type": "string", "description": "APP名称（可选）" },
+                "keywordPattern": { "type": "string", "description": "关键词正则（可选）" },
+                "priority": { "type": "string", "description": "优先级过滤（可选）" },
+                "category": { "type": "string", "description": "分类过滤（可选）" },
+                "enabled": { "type": "boolean", "description": "是否启用" },
+                "createdAt": { "type": "string", "format": "date-time" }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "set_filter_mode",
+      "displayName": "设置过滤模式",
+      "description": "切换通知过滤模式（白名单/黑名单）",
+      "inputSchema": {
+        "type": "object",
+        "required": ["mode"],
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": ["whitelist", "blacklist"],
+            "description": "whitelist=白名单（仅转发匹配的通知），blacklist=黑名单（转发除匹配外的所有通知）"
+          }
+        }
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "mode": { "type": "string" }
+        }
+      }
+    },
+    {
+      "name": "add_filter_rule",
+      "displayName": "添加过滤规则",
+      "description": "添加一条通知过滤规则，支持按包名、关键词正则、优先级、分类组合过滤",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "packageName": { "type": "string", "description": "APP包名（精确匹配）" },
+          "appName": { "type": "string", "description": "APP名称（模糊匹配）" },
+          "keywordPattern": { "type": "string", "description": "关键词正则表达式" },
+          "priority": { "type": "string", "enum": ["low", "default", "high", "max"], "description": "通知优先级" },
+          "category": { "type": "string", "description": "通知分类" },
+          "enabled": { "type": "boolean", "default": true, "description": "是否立即启用" }
+        }
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "ruleId": { "type": "string", "description": "新规则ID" }
+        }
+      }
+    },
+    {
+      "name": "remove_filter_rule",
+      "displayName": "删除过滤规则",
+      "description": "根据规则ID删除一条过滤规则",
+      "inputSchema": {
+        "type": "object",
+        "required": ["ruleId"],
+        "properties": {
+          "ruleId": { "type": "string", "description": "规则ID" }
+        }
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" }
+        }
+      }
+    },
+    {
+      "name": "get_masking_rules",
+      "displayName": "获取脱敏规则",
+      "description": "获取当前生效的数据脱敏规则",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "rules": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string" },
+                "name": { "type": "string", "description": "规则名称" },
+                "pattern": { "type": "string", "description": "匹配正则" },
+                "replacement": { "type": "string", "description": "替换模板" },
+                "enabled": { "type": "boolean" }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "add_masking_rule",
+      "displayName": "添加脱敏规则",
+      "description": "添加一条数据脱敏规则",
+      "inputSchema": {
+        "type": "object",
+        "required": ["name", "pattern", "replacement"],
+        "properties": {
+          "name": { "type": "string", "description": "规则名称" },
+          "pattern": { "type": "string", "description": "匹配正则表达式" },
+          "replacement": { "type": "string", "description": "替换模板，如 $1****$2" }
+        }
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "ruleId": { "type": "string" }
+        }
+      }
+    },
+    {
+      "name": "get_logs",
+      "displayName": "获取运行日志",
+      "description": "获取服务运行日志，支持按级别和关键词过滤",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "string",
+            "enum": ["DEBUG", "INFO", "WARN", "ERROR"],
+            "description": "日志级别过滤"
+          },
+          "keyword": {
+            "type": "string",
+            "description": "关键词搜索"
+          },
+          "sinceMinutes": {
+            "type": "integer",
+            "description": "获取最近N分钟的日志，默认30",
+            "default": 30
+          },
+          "limit": {
+            "type": "integer",
+            "description": "最大返回条数，默认100",
+            "default": 100
+          }
+        }
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "logs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "timestamp": { "type": "string", "format": "date-time" },
+                "level": { "type": "string" },
+                "tag": { "type": "string" },
+                "message": { "type": "string" },
+                "rootCause": { "type": "string", "description": "异常根因（仅ERROR级别）" },
+                "fixSuggestion": { "type": "string", "description": "修复建议（仅ERROR级别）" }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "trigger_action",
+      "displayName": "触发自定义动作",
+      "description": "手动触发一条通知匹配后的自定义动作（测试用）",
+      "inputSchema": {
+        "type": "object",
+        "required": ["actionType", "testContent"],
+        "properties": {
+          "actionType": {
+            "type": "string",
+            "enum": ["tts", "save_to_file", "trigger_mcp"],
+            "description": "动作类型：tts=语音播报, save_to_file=保存到文件, trigger_mcp=触发其他MCP工具"
+          },
+          "testContent": {
+            "type": "string",
+            "description": "测试用的通知内容"
+          },
+          "targetMcpTool": {
+            "type": "string",
+            "description": "当 actionType=trigger_mcp 时，指定目标MCP工具名"
+          }
+        }
+      },
+            "outputSchema": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "result": { "type": "string" }
+        }
+      }
+    },
+    {
+      "name": "run_diagnostic",
+      "displayName": "一键故障排查",
+      "description": "执行全链路自动诊断：权限校验、服务状态、系统拦截、连接状态、资源状态、日志分析，精准定位根因并输出修复方案",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": ["all", "permission", "service", "system_block", "connection", "resource", "log"],
+            "description": "指定诊断类别，默认 all（全链路）。可单独诊断某一类：permission=权限校验, service=服务状态, system_block=系统拦截, connection=连接状态, resource=资源状态, log=日志分析",
+            "default": "all"
+          }
+        }
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "overallStatus": { "type": "string", "enum": ["PASS", "WARN", "FAIL"], "description": "总体诊断结果" },
+          "summary": { "type": "string", "description": "一句话诊断结论" },
+          "report": { "type": "string", "description": "完整可读诊断报告文本" },
+          "checkCount": { "type": "integer", "description": "总检查项数" },
+          "passCount": { "type": "integer", "description": "通过数" },
+          "warnCount": { "type": "integer", "description": "警告数" },
+          "failCount": { "type": "integer", "description": "失败数" },
+          "fixableCount": { "type": "integer", "description": "可自动修复的问题数" },
+          "autoFixAvailable": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "可自动修复的问题列表"
+          }
+        }
+      }
+    },
+    {
+      "name": "auto_fix",
+      "displayName": "一键自动修复",
+      "description": "自动修复诊断发现的所有问题：跳转权限设置页面、重启服务、清理积压队列等。执行前会自动运行一次诊断以获取当前问题列表",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "message": { "type": "string" },
+          "results": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "每项修复操作的结果"
+          },
+          "totalFixed": { "type": "integer", "description": "成功修复数" },
+          "totalFailed": { "type": "integer", "description": "修复失败数" }
+        }
+      }
+    },
+    {
+      "name": "get_diagnostic_history",
+      "displayName": "诊断历史",
+      "description": "获取最近 10 次诊断报告的历史记录，包含时间、状态、摘要",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "history": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "timestamp": { "type": "integer" },
+                "overallStatus": { "type": "string" },
+                "summary": { "type": "string" },
+                "checkCount": { "type": "integer" },
+                "failCount": { "type": "integer" },
+                "warnCount": { "type": "integer" }
+              }
+            }
+          },
+          "totalCount": { "type": "integer" }
+        }
+      }
+    }
+  ],
+  "permissions": [
+    {
+      "name": "android.permission.BIND_NOTIFICATION_LISTENER_SERVICE",
+      "description": "通知使用权：读取系统通知栏的所有通知",
+      "required": true
+    },
+    {
+      "name": "android.permission.FOREGROUND_SERVICE",
+      "description": "前台服务：保持服务在后台持续运行",
+      "required": true
+    },
+    {
+      "name": "android.permission.RECEIVE_BOOT_COMPLETED",
+      "description": "开机自启：系统重启后自动恢复服务",
+      "required": true
+    },
+    {
+      "name": "android.permission.WAKE_LOCK",
+      "description": "唤醒锁：防止系统休眠时服务被挂起",
+      "required": true
+    },
+    {
+      "name": "android.permission.POST_NOTIFICATIONS",
+      "description": "通知权限：用于显示服务状态通知和告警",
+      "required": true
+    },
+    {
+      "name": "android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS",
+      "description": "电池优化白名单：防止系统因电池优化杀死服务",
+      "required": false
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+[
+    {
+        "merged": "com.miclaw.notification.app-merged_res-41:/layout_activity_diagnostic.xml.flat",
+        "source": "com.miclaw.notification.app-main-43:/layout/activity_diagnostic.xml"
+    },
+    {
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\8.2\\com.miclaw.notification.app-merged_res-41:\\mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\8.2\\com.miclaw.notification.app-main-43:\\mipmap-anydpi-v26\\ic_launcher.xml"
+    },
+    {
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\8.2\\com.miclaw.notification.app-merged_res-41:\\layout_activity_diagnostic.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\8.2\\com.miclaw.notification.app-main-43:\\layout\\activity_diagnostic.xml"
+    },
+    {
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\8.2\\com.miclaw.notification.app-merged_res-41:\\mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\8.2\\com.miclaw.notification.app-main-43:\\mipmap-anydpi-v26\\ic_launcher_round.xml"
+    },
+    {
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\8.2\\com.miclaw.notification.app-merged_res-41:\\layout_activity_main.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\8.2\\com.miclaw.notification.app-main-43:\\layout\\activity_main.xml"
+    },
+    {
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\8.2\\com.miclaw.notification.app-merged_res-41:\\drawable_ic_launcher_foreground.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\8.2\\com.miclaw.notification.app-main-43:\\drawable\\ic_launcher_foreground.xml"
+    },
+    {
+        "merged": "C:\\Users\\Lenovo\\.gradle\\daemon\\8.2\\com.miclaw.notification.app-merged_res-41:\\drawable_ic_launcher_background.xml.flat",
+        "source": "C:\\Users\\Lenovo\\.gradle\\daemon\\8.2\\com.miclaw.notification.app-main-43:\\drawable\\ic_launcher_background.xml"
+    }
+]

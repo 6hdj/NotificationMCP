@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 诊断状态颜色 -->
+    <color name="diagnostic_pass">#4CAF50</color>
+    <color name="diagnostic_warn">#FF9800</color>
+    <color name="diagnostic_fail">#F44336</color>
+    <color name="diagnostic_info">#2196F3</color>
+    <color name="diagnostic_running">#1976D2</color>
+    <color name="diagnostic_fix">#FF6F00</color>
+
+    <!-- 诊断界面背景 -->
+    <color name="diagnostic_item_bg">#FAFAFA</color>
+    <color name="diagnostic_category_bg">#E3F2FD</color>
+</resources>

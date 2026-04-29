@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="diagnostic_category_bg">#E3F2FD</color>
+    <color name="diagnostic_fail">#F44336</color>
+    <color name="diagnostic_fix">#FF6F00</color>
+    <color name="diagnostic_info">#2196F3</color>
+    <color name="diagnostic_item_bg">#FAFAFA</color>
+    <color name="diagnostic_pass">#4CAF50</color>
+    <color name="diagnostic_running">#1976D2</color>
+    <color name="diagnostic_warn">#FF9800</color>
+    <string name="action_cancel">取消</string>
+    <string name="action_confirm">确定</string>
+    <string name="action_open_settings">打开设置</string>
+    <string name="action_retry">重试</string>
+    <string name="app_name">通知读取</string>
+    <string name="channel_alert">告警通知</string>
+    <string name="channel_alert_desc">服务异常告警和诊断结果</string>
+    <string name="channel_service">服务状态</string>
+    <string name="channel_service_desc">通知读取服务运行状态通知</string>
+    <string name="diagnostic_all_pass">所有检查通过，服务运行正常</string>
+    <string name="diagnostic_complete">诊断完成</string>
+    <string name="diagnostic_fix">一键修复</string>
+    <string name="diagnostic_has_issues">发现 %1$d 个问题，其中 %2$d 个可自动修复</string>
+    <string name="diagnostic_history">诊断历史</string>
+    <string name="diagnostic_running">正在诊断，请稍候...</string>
+    <string name="diagnostic_start">开始全链路诊断</string>
+    <string name="diagnostic_title">一键故障排查</string>
+    <string name="notification_alert_listener_died">通知监听服务已停止，正在尝试重启...</string>
+    <string name="notification_alert_restart_limit">服务重启次数已达上限，请手动检查</string>
+    <string name="notification_alert_ws_disconnected">与电脑端的连接已断开</string>
+    <string name="notification_service_content">正在监听系统通知，点击查看详情</string>
+    <string name="notification_service_content_stats">已接收 %1$d 条，转发 %2$d 条</string>
+    <string name="notification_service_title">通知读取服务运行中</string>
+    <string name="permission_battery_opt_desc">为保证服务持续运行，请将本应用加入电池优化白名单。</string>
+    <string name="permission_battery_opt_title">关闭电池优化</string>
+    <string name="permission_notification_listener_desc">通知读取服务需要「通知使用权」才能监听系统通知。请在设置中找到并开启此权限。</string>
+    <string name="permission_notification_listener_title">开启通知使用权</string>
+    <style name="Theme.NotificationMcp" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:colorPrimary">#1976D2</item>
+        <item name="android:colorPrimaryDark">#1565C0</item>
+        <item name="android:colorAccent">#FF9800</item>
+        <item name="android:statusBarColor">#1565C0</item>
+        <item name="android:windowBackground">#F5F5F5</item>
+    </style>
+</resources>
